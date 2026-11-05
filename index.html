@@ -42,11 +42,12 @@
     </label>
     <section class="ai-key" aria-labelledby="ai-key-title">
       <div>
-        <strong id="ai-key-title">AIのキー(OpenAI)</strong>
-        <small>OpenAIのAPIキーを入れると、ハルがAIで返事をします。キーはこの端末のブラウザの中だけに保存され、ほかの人やGitHubには送られません。</small>
+        <strong id="ai-key-title">AIのキー(Google Gemini・無料)</strong>
+        <small>GeminiのAPIキーを入れると、ハルがAIで返事をします。キーはこの端末のブラウザの中だけに保存され、ほかの人やGitHubには送られません。</small>
+        <small><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a> でGoogleアカウントにログインして「APIキーを作成」を押すと、クレジットカードなしで無料のキーが作れます。</small>
       </div>
       <div class="ai-key-row">
-        <input type="password" id="ai-key-input" aria-label="OpenAIのAPIキー" placeholder="sk-proj-…" autocomplete="off" spellcheck="false">
+        <input type="password" id="ai-key-input" aria-label="GeminiのAPIキー" placeholder="AIza…" autocomplete="off" spellcheck="false">
         <button class="secondary-button" id="ai-key-save" type="button">保存</button>
       </div>
       <p class="ai-key-status"><span id="ai-key-status"></span><button class="text-button" id="ai-key-clear" type="button" hidden>消す</button></p>
