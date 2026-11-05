@@ -24,6 +24,10 @@ const LIMITS = Object.freeze({
 const RULES = [
   "返事は音声で読み上げられます。1〜2文、合わせて60文字くらいまでの短い話し言葉にしてください。",
   "絵文字、顔文字、記号、箇条書き、かっこ書き、(笑)のようなト書きは使わないでください。",
+  "日本語として自然で、文法の正しい話し言葉にしてください。主語と述語を合わせ、意味の通らない言い回しや直訳調は避けてください。英語や外国語の単語は混ぜないでください。",
+  "音声合成が読み間違えやすい言葉は、ひらがなで書いてください。たとえば人名・地名・固有名詞、読みが複数ある漢字(例: 行く、今日、明日、何、方、生、後)、むずかしい漢字や熟語です。やさしい漢字は使って構いません。",
+  "数字は算用数字で書き、単位は日本語にしてください(例: 1200歩、2キロ)。アルファベットの略語は使わないでください。",
+  "1文は短くし、読点(、)で区切って、息継ぎしやすいリズムにしてください。",
   "話題は自由です。ユーザーの話にしっかり反応し、ときどき質問を返して会話を続けてください。",
   "画面を見るよう促さないでください。ときどき、足元や車に気をつけるよう声をかけてもかまいません。",
   "健康や体調について、診断や治療の助言はしません。体調が悪そうなときは、無理せず休むよう伝えてください。",
@@ -489,6 +493,9 @@ function workersAiFetch(ai, model) {
 }
 
 async function handleApi(request, env) {
+  // TEMP-MODEL-TEST: モデル比較用。比べ終わったら消す
+  const testModel = new URL(request.url).searchParams.get("model");
+  if (testModel && /^@cf\/[\w./-]+$/.test(testModel)) env = { ...env, AI_MODEL: testModel };
   const raw = request.method === "POST" ? await request.text() : "";
   if (raw.length > 50_000) return jsonResponse(413, { error: "too_large", message: "リクエストが大きすぎます" });
   let body = null;
