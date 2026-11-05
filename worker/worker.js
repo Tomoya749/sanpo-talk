@@ -462,7 +462,8 @@ function jsonResponse(status, json) {
 }
 
 // Workers AI の既定モデル。名前が変わったときは、変数 AI_MODEL で上書きできる
-const DEFAULT_AI_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
+// 日本語の自然さを比べて選んだ(Llama 3.3 70B は文法が崩れやすかった)
+const DEFAULT_AI_MODEL = "@cf/mistralai/mistral-small-3.1-24b-instruct";
 
 // core.js が呼ぶ「OpenAI への fetch」を、Workers AI の呼び出しに差し替える
 function workersAiFetch(ai, model) {
@@ -493,9 +494,6 @@ function workersAiFetch(ai, model) {
 }
 
 async function handleApi(request, env) {
-  // TEMP-MODEL-TEST: モデル比較用。比べ終わったら消す
-  const testModel = new URL(request.url).searchParams.get("model");
-  if (testModel && /^@cf\/[\w./-]+$/.test(testModel)) env = { ...env, AI_MODEL: testModel };
   const raw = request.method === "POST" ? await request.text() : "";
   if (raw.length > 50_000) return jsonResponse(413, { error: "too_large", message: "リクエストが大きすぎます" });
   let body = null;
