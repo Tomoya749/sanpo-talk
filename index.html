@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="キャラクターと話しながら散歩するアプリの試作版">
+  <meta name="theme-color" content="#F4F8F6">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="さんぽトーク">
+  <title>さんぽトーク(試作)</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="assets/icon.png">
+  <link rel="apple-touch-icon" href="assets/icon.png">
+  <link rel="stylesheet" href="app.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true">
+    <symbol id="i-mic" viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol>
+    <symbol id="i-dots" viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></symbol>
+    <symbol id="i-pocket" viewBox="0 0 24 24"><path d="M16 2H8a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3V5a3 3 0 0 0-3-3zm1 17a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1z"/><path d="M10 17h4v1.5h-4z"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z"/></symbol>
+    <symbol id="i-walk" viewBox="0 0 24 24"><path d="M13.5 5.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM9.8 8.9 7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3A7.3 7.3 0 0 0 19 13v-2a5 5 0 0 1-4.3-2.4l-1-1.6a2 2 0 0 0-1.7-1 2 2 0 0 0-.8.2L6 8.3V13h2V9.6z"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M2 21 23 12 2 3v7l15 2-15 2z"/></symbol>
+  </svg>
+
+  <!-- ホーム -->
+  <main id="screen-home" class="screen screen-home">
+    <header class="home-head">
+      <h1>さんぽトーク</h1>
+      <p class="badge" id="home-badge">試作版</p>
+    </header>
+    <div class="character"><img src="assets/character.png" alt="" id="home-character"></div>
+    <p class="bubble" aria-live="polite"><span class="bubble-name" data-character-name></span><span id="home-line"></span></p>
+    <label class="switch-row">
+      <span>
+        <strong>返事のあと、自動で聞き取る</strong>
+        <small>オフにすると、マイクボタンを押したときだけ聞き取ります</small>
+      </span>
+      <input type="checkbox" role="switch" id="auto-listen-home" checked>
+    </label>
+    <section class="ai-key" aria-labelledby="ai-key-title">
+      <div>
+        <strong id="ai-key-title">AIのキー(OpenAI)</strong>
+        <small>OpenAIのAPIキーを入れると、ハルがAIで返事をします。キーはこの端末のブラウザの中だけに保存され、ほかの人やGitHubには送られません。</small>
+      </div>
+      <div class="ai-key-row">
+        <input type="password" id="ai-key-input" aria-label="OpenAIのAPIキー" placeholder="sk-proj-…" autocomplete="off" spellcheck="false">
+        <button class="secondary-button" id="ai-key-save" type="button">保存</button>
+      </div>
+      <p class="ai-key-status"><span id="ai-key-status"></span><button class="text-button" id="ai-key-clear" type="button" hidden>消す</button></p>
+    </section>
+    <button class="primary-button" id="start-button" type="button">
+      <svg class="icon"><use href="#i-walk"/></svg>さんぽをはじめる
+    </button>
+  </main>
+
+  <!-- 散歩中 -->
+  <main id="screen-walk" class="screen screen-walk" hidden>
+    <section class="stats" aria-label="今回の散歩">
+      <div class="stat stat-main"><span class="stat-label">歩数(推定)</span><span class="stat-value"><b id="walk-steps">0</b><small>歩</small></span></div>
+      <div class="stat"><span class="stat-label">時間</span><span class="stat-value"><b id="walk-time">0:00</b></span></div>
+      <div class="stat"><span class="stat-label">距離</span><span class="stat-value"><b id="walk-distance">0.00</b><small>km</small></span></div>
+    </section>
+    <div class="notices" id="walk-notices"></div>
+    <div class="character"><img src="assets/character.png" alt=""></div>
+    <section class="bubbles" id="walk-bubbles" aria-live="polite">
+      <p class="bubble" id="walk-character-bubble" hidden><span class="bubble-name" data-character-name></span><span id="walk-character-text"></span></p>
+      <p class="bubble bubble-user" id="walk-user-bubble" hidden></p>
+    </section>
+    <p class="status" id="walk-status" aria-live="polite"></p>
+    <form class="text-input" id="text-form" hidden>
+      <input type="text" id="text-input" placeholder="文字で話しかける" autocomplete="off" enterkeyhint="send" maxlength="200">
+      <button type="submit" aria-label="送る"><svg class="icon"><use href="#i-send"/></svg></button>
+    </form>
+    <section class="controls">
+      <button class="side-button" id="pocket-button" type="button">
+        <span class="side-icon"><svg class="icon"><use href="#i-pocket"/></svg></span>ポケット<br>モード
+      </button>
+      <div class="mic-wrap">
+        <button class="mic" id="mic-button" type="button" aria-label="話しかける">
+          <svg class="icon"><use href="#i-mic" id="mic-icon"/></svg>
+        </button>
+        <span class="mic-label" id="mic-label">話しかける</span>
+      </div>
+      <button class="side-button" id="finish-button" type="button">
+        <span class="side-icon"><svg class="icon"><use href="#i-flag"/></svg></span>おわる
+      </button>
+    </section>
+    <label class="switch-row switch-compact">
+      <span>返事のあと自動で聞き取る</span>
+      <input type="checkbox" role="switch" id="auto-listen-walk">
+    </label>
+  </main>
+
+  <!-- 結果 -->
+  <main id="screen-result" class="screen screen-result" hidden>
+    <h1 class="result-title">おつかれさま！</h1>
+    <section class="stats">
+      <div class="stat stat-main"><span class="stat-label">歩数(推定)</span><span class="stat-value"><b id="result-steps">0</b><small>歩</small></span></div>
+      <div class="stat"><span class="stat-label">時間</span><span class="stat-value"><b id="result-time">0:00</b></span></div>
+      <div class="stat"><span class="stat-label">距離</span><span class="stat-value"><b id="result-distance">0.00</b><small>km</small></span></div>
+    </section>
+    <div class="result-comment">
+      <img src="assets/character.png" alt="">
+      <p class="bubble" aria-live="polite"><span class="bubble-name" data-character-name></span><span id="result-comment"></span></p>
+    </div>
+    <h2>検証メモ</h2>
+    <p class="hint">プロトタイプで確かめたい数値です。「結果をコピー」で、会話と一緒に送れます。</p>
+    <dl class="metrics" id="result-metrics"></dl>
+    <details class="log">
+      <summary id="log-summary">会話のログ</summary>
+      <div id="result-log"></div>
+    </details>
+    <div class="result-actions">
+      <button class="secondary-button" id="copy-button" type="button">結果をコピー</button>
+      <button class="primary-button" id="home-button" type="button">ホームへもどる</button>
+    </div>
+  </main>
+
+  <!-- 歩く前の注意 -->
+  <dialog id="safety-dialog" aria-labelledby="safety-title">
+    <h2 id="safety-title">歩く前に</h2>
+    <ul class="safety-list">
+      <li>イヤホンをつけて、画面は見ずに歩いてください。</li>
+      <li>道路を渡るときや人の多い場所では、会話より安全を優先してください。</li>
+      <li>画面はつけたままにしてください。消すと歩数と会話が止まります。ポケットに入れるときは「ポケットモード」を使ってください。</li>
+      <li>位置情報とマイクの使用を許可してください。</li>
+    </ul>
+    <div class="dialog-actions">
+      <button class="text-button" id="safety-cancel" type="button">やめる</button>
+      <button class="primary-button" id="safety-start" type="button">わかった、出発！</button>
+    </div>
+  </dialog>
+
+  <!-- おわる前の確認 -->
+  <dialog id="finish-dialog" aria-labelledby="finish-title">
+    <h2 id="finish-title">散歩をおわる？</h2>
+    <p>結果の画面に進みます。</p>
+    <div class="dialog-actions">
+      <button class="text-button" id="finish-cancel" type="button">つづける</button>
+      <button class="primary-button" id="finish-ok" type="button">おわる</button>
+    </div>
+  </dialog>
+
+  <div class="pocket" id="pocket" hidden>
+    <p>ポケットモード<br>長押しで解除</p>
+  </div>
+  <p class="toast" id="toast" role="status" hidden></p>
+</body>
+</html>

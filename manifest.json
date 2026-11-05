@@ -1,0 +1,11 @@
+{
+  "name": "さんぽトーク(試作)",
+  "short_name": "さんぽトーク",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#F4F8F6",
+  "theme_color": "#F4F8F6",
+  "description": "キャラクターと話しながら散歩するアプリの試作版",
+  "orientation": "portrait",
+  "icons": [{ "src": "assets/icon.png", "sizes": "256x256", "type": "image/png" }]
+}
